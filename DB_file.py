@@ -8,29 +8,28 @@ various location and storing into databasse...
 import logging
 import csv
 import mysql.connector
-
 logging.basicConfig(filename="Server.log",level=10,filemode='w',
                           format='%(asctime)s : %(levelname)s : %(name)s : %(message)s')
 log = logging.getLogger(str(__file__).split('/')[-1])
 
+log.info("Got file list from source file location")
+try:
+    # createing database on sql server
+    log.info("connecting to database...")
+    conn = mysql.connector.connect(host="localhost", user="root", password="12345", port="3307")
+    log.info("connection sucessfully done.... ")
+    con = conn.cursor()
+    con.execute("Create database python_41")
+    log.info("Database created")
+
+except mysql.connector.errors.DatabaseError:
+    # database already available on server
+    log.info("database already created")
+    conn = mysql.connector.connect(host="localhost", user="root", password="12345", port="3307", database="python_41")
+    log.info("connected to the database.... ")
+    con = conn.cursor()
+
 def db_connection(file):
-    log.info("Got file list from source file location")
-    try:
-        # createing database on sql server
-        log.info("connecting to database...")
-        conn = mysql.connector.connect(host="localhost", user ="root", password = "12345", port="3307")
-        log.info("connection sucessfully done.... ")
-        con = conn.cursor()
-        con.execute("Create database python_41")
-        log.info("Database created")
-
-    except mysql.connector.errors.DatabaseError:
-        # database already available on server
-        log.info("database already created")
-        conn = mysql.connector.connect(host="localhost", user="root", password="12345", port="3307",database = "python_41")
-        log.info("connected to the database.... ")
-        con = conn.cursor()
-
 
     files = [lst for lst in file if str(lst).endswith('.csv')]
     #checking csv file name and creating table in database
@@ -45,7 +44,7 @@ def db_connection(file):
                 ph_number = a[0][3]
                 balance = a[0][4]
             try:
-                con.execute(f"create table customer({id} int,"
+                con.execute(f"create table customer({id} int primary key,"
                             f"{name} varchar(20),"
                             f"{ac_number} varchar(10),"
                             f"{ph_number} varchar(10),"
@@ -61,9 +60,12 @@ def db_connection(file):
                         if row[0].isalpha():
                             continue
                         else:
-                            log.info(f"data insertinng into {i} tables")
-                            con.execute(f"""insert into customer values({row[0]},'{row[1]}',{row[2]},{row[3]},{row[4]})""")
-                            conn.commit()
+                            try:
+                                log.info(f"data insertinng into {i} tables")
+                                con.execute(f"""insert into customer values({row[0]},'{row[1]}',{row[2]},{row[3]},{row[4]})""")
+                                conn.commit()
+                            except mysql.connector.errors.IntegrityError:
+                                continue
 
             # Inserting data into created tables
             else:
@@ -73,9 +75,12 @@ def db_connection(file):
                         if row[0].isalpha():
                             continue
                         else:
-                            log.info(f"data inserting into {i} tables")
-                            con.execute(f"""insert into customer values({row[0]},'{row[1]}',{row[2]},{row[3]},{row[4]})""")
-                            conn.commit()
+                            try:
+                                log.info(f"data inserting into {i} tables")
+                                con.execute(f"""insert into customer values({row[0]},'{row[1]}',{row[2]},{row[3]},{row[4]})""")
+                                conn.commit()
+                            except mysql.connector.errors.IntegrityError:
+                                continue
 
         elif i == 'Business_loan.csv':
             # checking csv file name and creating table in database
@@ -87,7 +92,7 @@ def db_connection(file):
                 business_loan_amt = a[0][2]
 
             try:
-                con.execute(f"create table business_loan_data({business_loan_customer_id} int,"
+                con.execute(f"create table business_loan_data({business_loan_customer_id} int primary key,"
                             f"{business_loan_id} int,"
                             f"{business_loan_amt} int)")
                 log.info(f"table {i} creating in database")
@@ -101,9 +106,12 @@ def db_connection(file):
                         if row[0].isalpha():
                             continue
                         else:
-                            log.info(f"inserting data into {i} database")
-                            con.execute(f"insert into business_loan_data values({row[0]},'{row[1]}',{row[2]})")
-                            conn.commit()
+                            try:
+                                log.info(f"inserting data into {i} database")
+                                con.execute(f"insert into business_loan_data values({row[0]},'{row[1]}',{row[2]})")
+                                conn.commit()
+                            except mysql.connector.errors.IntegrityError:
+                                continue
 
             # Inserting data into created tables
             else:
@@ -113,9 +121,12 @@ def db_connection(file):
                         if row[0].isalpha():
                             continue
                         else:
-                            log.info(f"data inserting in {i} database")
-                            con.execute(f"insert into business_loan_data values({row[0]},'{row[1]}',{row[2]})")
-                            conn.commit()
+                            try:
+                                log.info(f"data inserting in {i} database")
+                                con.execute(f"insert into business_loan_data values({row[0]},'{row[1]}',{row[2]})")
+                                conn.commit()
+                            except mysql.connector.errors.IntegrityError:
+                                continue
 
         elif i == 'Home_loan.csv':
             # checking csv file name and creating table in database
@@ -127,7 +138,7 @@ def db_connection(file):
                 home_loan_amt = a[0][2]
 
             try:
-                con.execute(f"create table home_loan_data({home_loan_customer_id} int,"
+                con.execute(f"create table home_loan_data({home_loan_customer_id} int primary key,"
                             f"{home_loan_id} int,"
                             f"{home_loan_amt} int)")
                 log.info(f"table {i} creating in database")
@@ -141,9 +152,12 @@ def db_connection(file):
                         if row[0].isalpha():
                             continue
                         else:
-                            log.info(f"data inserting in {i} table")
-                            con.execute(f"insert into home_loan_data values({row[0]},'{row[1]}',{row[2]})")
-                            conn.commit()
+                            try:
+                                log.info(f"data inserting in {i} table")
+                                con.execute(f"insert into home_loan_data values({row[0]},'{row[1]}',{row[2]})")
+                                conn.commit()
+                            except mysql.connector.errors.IntegrityError:
+                                continue
 
             # Inserting data into created tables
             else:
@@ -153,7 +167,19 @@ def db_connection(file):
                         if row[0].isalpha():
                             continue
                         else:
-                            log.info(f"data inserting in {i} table")
-                            con.execute(f"insert into home_loan_data values({row[0]},'{row[1]}',{row[2]})")
-                            conn.commit()
+                            try:
+                                log.info(f"data inserting in {i} table")
+                                con.execute(f"insert into home_loan_data values({row[0]},'{row[1]}',{row[2]})")
+                                conn.commit()
+                            except mysql.connector.errors.IntegrityError:
+                                continue
 
+
+
+def user_input():
+    ch = int(input("Enter customer id to be search in database = "))
+    log.info("taking user id from requester")
+    con.execute(f"""select * from ((customer inner join business_loan_data on customer.id = business_loan_data.id) inner join home_loan_data on customer.id = home_loan_data.id) where customer.id = {ch}""")
+    row = con.fetchall()
+    for data in row:
+        print(data)

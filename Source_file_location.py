@@ -34,7 +34,6 @@ def get_data():
             for file in avail_file:
                 if file.endswith('.csv'):
                     file_list.append(file)
-            print(file_list)
 
         log.info("Retirning file list to database file")
         return file_list
