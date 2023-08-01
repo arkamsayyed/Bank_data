@@ -179,7 +179,7 @@ def db_connection(file):
 def user_input():
     ch = int(input("Enter customer id to be search in database = "))
     log.info("taking user id from requester")
-    con.execute(f"""select * from ((customer inner join business_loan_data on customer.id = business_loan_data.id) inner join home_loan_data on customer.id = home_loan_data.id) where customer.id = {ch}""")
+    con.execute(f"""select customer.id,customer.name,customer.ac_number,customer.ph_number,customer.balance,business_loan_data.loan_id,business_loan_data.loan_amt,home_loan_data.loan_number,home_loan_data.home_loan_amount from ((customer inner join business_loan_data on customer.id = business_loan_data.id) inner join home_loan_data on customer.id = home_loan_data.id) where customer.id = {ch}""")
     row = con.fetchall()
     for data in row:
         print(data)
